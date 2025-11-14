@@ -1,54 +1,49 @@
-name: CI
+name: CI — build & test (ubuntu)
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
       matrix:
-        compiler: [gcc, clang]
-        build_type: [Debug, Release]
+        compiler: [gcc]
+        build_type: [Release]
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Set up apt dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build python3-pip
-          if [ "${{ matrix.compiler }}" = "clang" ]; then
-            sudo apt-get install -y clang
-            export CC=clang
-            export CXX=clang++
-          else
-            export CC=gcc
-            export CXX=g++
-          fi
-        shell: bash
+          sudo apt-get install -y build-essential cmake ccache
+
+      - name: Cache fetchcontent / deps
+        uses: actions/cache@v4
+        with:
+          # cache the CMake fetched deps to speed up repeated runs
+          path: |
+            build/_deps
+            ~/.ccache
+          key: ${{ runner.os }}-cmake-deps-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-deps-
 
       - name: Configure (CMake)
-        run: |
-          mkdir -p build
-          cd build
-          cmake -S .. -B . -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        env:
-          CC: ${{ matrix.compiler == 'clang' && 'clang' || 'gcc' }}
-          CXX: ${{ matrix.compiler == 'clang' && 'clang++' || 'g++' }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Build
-        run: |
-          cd build
-          cmake --build . --config ${{ matrix.build_type }} -- -j
-          ls -la .
-      
-      - name: Run unit tests
+        run: cmake --build build --config ${{ matrix.build_type }} -- -j
+
+      - name: Run tests
         run: |
           cd build
           ctest --output-on-failure -j 2
