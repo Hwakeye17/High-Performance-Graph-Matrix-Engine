@@ -1,0 +1,53 @@
+Tasks (day-by-day style, 1 week suggested)
+
+Day 1 — Repo & skeleton
+
+Create GitHub repo, add README with project summary and plan.
+
+Create directory layout:
+
+/include
+/src
+/tests
+/benchmarks
+/docs
+CMakeLists.txt
+
+
+Add .gitignore, LICENSE, CONTRIBUTING.md.
+
+Day 2 — CMake + CI
+
+Write CMakeLists.txt that builds a library hpgeom and executables for tests & benchmarks.
+
+Add GitHub Actions workflow that does: configure/build/test on ubuntu-latest (matrix later for windows/linux). Fail fast if tests fail.
+  
+Day 3 — CSR data structure
+
+Implement CSR class (header in /include/hpgeom/csr.hpp, impl in /src/csr.cpp): members row_ptr, col_idx, values, metadata (nrows, ncols, nnz).
+
+Provide: constructor from (nrows, ncols) and from edge-list; method add_edge(u,v,w) or from_edge_list() producing stable CSR arrays; method to export adjacency for testing.
+
+Day 4 — Blocked matrix representation
+
+Implement BlockedMatrix with tile size parameter (start with 64×64 as plan suggests).
+
+API: BlockedMatrix::allocate(nrows, ncols, block_size), set(i,j,val), get(i,j), iterate over tiles. Ensure each tile is stored in contiguous aligned buffer (see allocator next).
+
+Day 5 — Aligned memory allocator
+
+Use std::pmr::monotonic_buffer_resource or aligned_alloc (platform compat) to guarantee alignment for SIMD.
+
+Provide RAII wrappers and a small allocator utility used by BlockedMatrix and CSR values arrays.
+
+Day 6 — Tests (GoogleTest)
+
+Add GoogleTest to CMake (fetch or submodule).
+
+Tests: CSR construction correctness (from small graphs), BlockedMatrix set/get correctness vs naive dense matrix, aligned allocations check alignment.
+
+Day 7 — Polish + docs
+
+Update README with build/run instructions and Phase 1 deliverable checklist.
+
+Verify CI builds/tests passing and push to GitHub

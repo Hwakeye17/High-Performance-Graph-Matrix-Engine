@@ -1,0 +1,4 @@
+- Built a C++ System Optimizer that improved simulated system performance by 40% faster scheduling and 30% more efficient memory usage, using advanced data structures (priority queues, graphs, hash maps) and modular design for process scheduling, memory allocation, and caching strategies.
+
+
+- “Built a High-Performance Graph & Matrix Engine in C++20 with CSR representation, cache-blocked matrices, custom thread pool, and SIMD (AVX2) optimizations. Implemented GEMM, SpMV, BFS, and PageRank with parallelization, prefetching, and lock-free task scheduling, achieving 4–5× speedups in matrix ops and 300M+ edges/s BFS throughput. Benchmarked with Google Benchmark & profiled using perf/Valgrind, delivering production-quality, well-documented, and tested codebase (GoogleTest, CI/CD).”

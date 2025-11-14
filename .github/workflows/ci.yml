@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build python3-pip
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get install -y clang
+            export CC=clang
+            export CXX=clang++
+          else
+            export CC=gcc
+            export CXX=g++
+          fi
+        shell: bash
+
+      - name: Configure (CMake)
+        run: |
+          mkdir -p build
+          cd build
+          cmake -S .. -B . -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        env:
+          CC: ${{ matrix.compiler == 'clang' && 'clang' || 'gcc' }}
+          CXX: ${{ matrix.compiler == 'clang' && 'clang++' || 'g++' }}
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --config ${{ matrix.build_type }} -- -j
+          ls -la .
+      
+      - name: Run unit tests
+        run: |
+          cd build
+          ctest --output-on-failure -j 2
